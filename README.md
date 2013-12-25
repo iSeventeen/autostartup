@@ -1,7 +1,10 @@
 autostartup
 ===========
 
-###This is a android app:
+### This is an Android App:
   - Auto run when start the phone;
-  - play video and audio;
-  - read the data from serial port;
+  - Play video and audio;
+  - Read the data from serial port.
+
+### platform:
+  - android sdk 4.0
