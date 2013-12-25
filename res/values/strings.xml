@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">AutoStartup</string>
+    <string name="health_content">健康状况：正常</string>
+    <string name="description_image_child">孩子照片</string>
+    <string name="description_image_parent">家长照片</string>
+    <string name="btn_video">视频轮播</string>
+    <string name="btn_hi">问候</string>
+    <string name="btn_avatar">头像</string>
+    
+    <string name="error_configuration">Please configure your serial port first.</string>
+    <string name="error_security">You do not have read/write permission to the serial
+        port.</string>
+    <string name="error_unknown">The serial port can not be opened for an unknown
+        reason.</string>
+
+</resources>

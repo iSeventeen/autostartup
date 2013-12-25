@@ -1,0 +1,92 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false"
+    android:orientation="horizontal"
+    tools:context=".MainActivity" >
+
+    <RelativeLayout
+        android:id="@+id/layout_video"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" >
+
+        <VideoView
+            android:id="@+id/videoview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/layout_avatar"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="3"
+        android:visibility="visible" >
+
+        <LinearLayout
+            android:id="@+id/layout_empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_toLeftOf="@id/layout_empty"
+            android:orientation="horizontal" >
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/img_child"
+            android:layout_width="220dp"
+            android:layout_height="260dp"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@id/layout_empty"
+            android:contentDescription="@string/description_image_child"
+            android:src="@drawable/cat_child" />
+
+        <ImageView
+            android:id="@+id/img_parent"
+            android:layout_width="220dp"
+            android:layout_height="260dp"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/layout_empty"
+            android:contentDescription="@string/description_image_parent"
+            android:src="@drawable/cat_parent" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/layout_right"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_weight="1" >
+
+        <TextView
+            android:id="@+id/health_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:hint="显示接收数据"
+            android:textColor="#33b5e5"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_video"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/health_content"
+            android:layout_centerInParent="true"
+            android:text="@string/btn_video" />
+
+        <Button
+            android:id="@+id/btn_avatar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btn_video"
+            android:layout_centerInParent="true"
+            android:text="@string/btn_avatar" />
+    </RelativeLayout>
+
+</LinearLayout>
