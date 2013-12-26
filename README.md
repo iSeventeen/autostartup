@@ -19,6 +19,6 @@ autostartup
   - Copy 'jni' fold from demo to your project;
   - Open the 'SerialPort.c' and 'SerialPort.h' files on 'jni', and change the SeriportPort route to map to your SerialPort.java file.
   - Open Terminal and place to 'jni';
-  - Input: $ your_android_ndk_path/jnk-build, press Enter;
+  - Input: $ your_android_ndk_path/ndk-build, press Enter;
   - After finish, 'libserialport.so' file will be added on libs/../;
 
