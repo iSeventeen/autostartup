@@ -69,11 +69,11 @@ static speed_t getBaudrate(jint baudrate)
 }
 
 /*
- * Class:     android_serialport_SerialPort
+ * Class:     com_android_serialport_SerialPort
  * Method:    open
  * Signature: (Ljava/lang/String;II)Ljava/io/FileDescriptor;
  */
-JNIEXPORT jobject JNICALL Java_android_com_android_autostartup_serialport_SerialPort_open
+JNIEXPORT jobject JNICALL Java_com_android_serialport_SerialPort_open
   (JNIEnv *env, jclass thiz, jstring path, jint baudrate, jint flags)
 {
 	int fd;
@@ -149,7 +149,7 @@ JNIEXPORT jobject JNICALL Java_android_com_android_autostartup_serialport_Serial
  * Method:    close
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_android_com_android_autostartup_serialport_SerialPort_close
+JNIEXPORT void JNICALL Java_com_android_serialport_SerialPort_close
   (JNIEnv *env, jobject thiz)
 {
 	jclass SerialPortClass = (*env)->GetObjectClass(env, thiz);

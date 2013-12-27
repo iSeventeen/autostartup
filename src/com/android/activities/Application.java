@@ -14,16 +14,17 @@
  * limitations under the License. 
  */
 
-package com.android.autostartup;
+package com.android.activities;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 
+import com.android.serialport.SerialPort;
+import com.android.serialport.SerialPortFinder;
+
 import android.content.SharedPreferences;
 
-import com.android.autostartup.serialport.SerialPort;
-import com.android.autostartup.serialport.SerialPortFinder;
 
 public class Application extends android.app.Application {
 

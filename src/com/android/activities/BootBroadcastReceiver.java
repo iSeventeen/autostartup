@@ -1,4 +1,4 @@
-package com.android.autostartup;
+package com.android.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

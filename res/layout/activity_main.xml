@@ -10,7 +10,7 @@
         android:id="@+id/layout_video"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone" >
+        android:visibility="visible" >
 
         <VideoView
             android:id="@+id/videoview"
@@ -24,7 +24,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="3"
-        android:visibility="visible" >
+        android:visibility="gone" >
 
         <LinearLayout
             android:id="@+id/layout_empty"

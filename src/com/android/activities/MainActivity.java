@@ -1,10 +1,13 @@
-package com.android.autostartup;
+package com.android.activities;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidParameterException;
 
 import org.apache.http.util.EncodingUtils;
+
+import com.android.autostartup.R;
+import com.android.serialport.SerialPort;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -23,7 +26,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
 
-import com.android.autostartup.serialport.SerialPort;
 
 public class MainActivity extends Activity implements OnClickListener {
 
