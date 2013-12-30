@@ -42,7 +42,7 @@
             android:layout_centerVertical="true"
             android:layout_toLeftOf="@id/layout_empty"
             android:contentDescription="@string/description_image_child"
-            android:src="@drawable/cat_child" />
+            android:src="@drawable/child" />
 
         <ImageView
             android:id="@+id/img_parent"
@@ -51,7 +51,7 @@
             android:layout_centerVertical="true"
             android:layout_toRightOf="@id/layout_empty"
             android:contentDescription="@string/description_image_parent"
-            android:src="@drawable/cat_parent" />
+            android:src="@drawable/parent" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -78,7 +78,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/health_content"
             android:layout_centerInParent="true"
-            android:text="@string/btn_video" />
+            android:text="@string/btn_video"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btn_avatar"
@@ -86,7 +87,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/btn_video"
             android:layout_centerInParent="true"
-            android:text="@string/btn_avatar" />
+            android:text="@string/btn_avatar"
+            android:visibility="gone" />
     </RelativeLayout>
 
 </LinearLayout>

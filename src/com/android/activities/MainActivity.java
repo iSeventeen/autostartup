@@ -4,29 +4,36 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidParameterException;
 
-import org.apache.http.util.EncodingUtils;
-
-import com.android.autostartup.R;
-import com.android.serialport.SerialPort;
-
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.KeyEvent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
 
+import com.android.autostartup.R;
+import com.android.serialport.SerialPort;
+import com.android.utils.FileUtils;
+import com.android.utils.Utils;
 
+@TargetApi(Build.VERSION_CODES.ECLAIR)
 public class MainActivity extends Activity implements OnClickListener {
 
     private static final int DELAY_MILLIS = 5000;
@@ -42,7 +49,9 @@ public class MainActivity extends Activity implements OnClickListener {
     private VideoView mVideoView;
     private MediaPlayer mediaPlayer;
 
-    private String videoPath;
+    private ImageView mParentImageView;
+    private ImageView mChildImageView;
+
     private int positionWhenPaused = -1;
 
     private Handler handler = new Handler();
@@ -89,6 +98,8 @@ public class MainActivity extends Activity implements OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        FileUtils.createFolders(this);
+
         // hide title
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         // set full screen
@@ -104,13 +115,11 @@ public class MainActivity extends Activity implements OnClickListener {
 
     @Override
     protected void onStart() {
-        mVideoView.setVideoURI(Uri.parse(videoPath));
-        // videoView.setMediaController(new MediaController(MainActivity.this));
+        mVideoView.setVideoURI(Uri.parse(FileUtils.getVideoPath(this)));
         mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 
             @Override
             public void onCompletion(MediaPlayer mp) {
-                // videoView.setVideoPath(videopath);
                 mVideoView.start();
             }
         });
@@ -156,26 +165,41 @@ public class MainActivity extends Activity implements OnClickListener {
         mAvatarBtn.setOnClickListener(this);
 
         mHealthTextView = (TextView) findViewById(R.id.health_content);
+
+        mChildImageView = (ImageView) findViewById(R.id.img_child);
+        mParentImageView = (ImageView) findViewById(R.id.img_parent);
     }
 
     private void initMediaPlayer() {
-        mediaPlayer = MediaPlayer.create(this, R.raw.ml);
+        try {
+            mediaPlayer = FileUtils.getAudioPlayer(this);
+            // mediaPlayer.prepare();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initVideoView() {
         mVideoView = (VideoView) findViewById(R.id.videoview);
-        // String path =
-        // "http://rmcdn.2mdn.net/MotifFiles/html/1248596/android_1330378998288.mp4";
-        videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
-        // videoView.setVideoPath(new File("/1.mp4").getAbsolutePath());
 
         mVideoView.requestFocus();
     }
 
     private void updateView() {
+        resetMediaPlayer();
+
         if (null != mVideoView) {
             showOrHide(true);
             mVideoView.start();
+        } else {
+            // TODO
+        }
+    }
+
+    private void resetMediaPlayer() {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.reset();
+            initMediaPlayer();
         }
     }
 
@@ -184,16 +208,32 @@ public class MainActivity extends Activity implements OnClickListener {
             @Override
             public void run() {
                 handler.removeCallbacks(runnable);
-                if (mVideoView.canPause()) {
+                if (mVideoView.isPlaying()) {
                     mVideoView.pause();
                 }
-                mHealthTextView.setText(new String(buffer, 0, size));
+                resetMediaPlayer();
+
+                String hexData = new String(buffer, 0, size);
+                mHealthTextView.setText(hexData);
+                updateImageView(hexData);
+
                 showOrHide(false);
                 mediaPlayer.start();
 
                 handler.postDelayed(runnable, DELAY_MILLIS);
             }
         });
+    }
+
+    private void updateImageView(String hexData) {
+        String basePath = Environment.getExternalStorageDirectory().getAbsolutePath()
+                + "/Autostartup" + "/";
+        String cardNumber = Utils.parseHexData(hexData);
+        FileUtils.createPathByCardNo(MainActivity.this, cardNumber);
+        Bitmap parentBitmap = BitmapFactory.decodeFile(basePath + cardNumber + "/parent.jpg");
+        mParentImageView.setImageBitmap(parentBitmap);
+        Bitmap childBitmap = BitmapFactory.decodeFile(basePath + cardNumber + "/child.jpg");
+        mChildImageView.setImageBitmap(childBitmap);
     }
 
     private void showOrHide(boolean isShowVideo) {
@@ -205,15 +245,27 @@ public class MainActivity extends Activity implements OnClickListener {
     public void onClick(View view) {
         if (view == mVideoBtn) {
             if (null != mVideoView) {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.reset();
+                    initMediaPlayer();
+                }
                 showOrHide(true);
                 mVideoView.start();
             }
         } else if (view == mAvatarBtn) {
             handler.removeCallbacks(runnable);
-
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.reset();
+                initMediaPlayer();
+            }
             if (mVideoView.canPause()) {
                 mVideoView.pause();
             }
+
+            // ------------------------------------------------------------
+            String hexData = "02 30 30 30 38 38 34 36 34 38 36 0D 0A 03";
+            updateImageView(hexData);
+            // ------------------------------------------------------------
 
             showOrHide(false);
             mediaPlayer.start();
@@ -239,26 +291,35 @@ public class MainActivity extends Activity implements OnClickListener {
 
     @Override
     protected void onDestroy() {
+        release();
+
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (KeyEvent.KEYCODE_BACK == keyCode) {
+            release();
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private void release() {
         if (mReadThread != null)
             mReadThread.interrupt();
         mApplication.closeSerialPort();
         mSerialPort = null;
-        super.onDestroy();
-    }
 
-    // fetch file from assets fold
-    public String getFromAssets(String fileName) {
-        String result = "";
-        try {
-            InputStream in = getResources().getAssets().open(fileName);
-            int length = in.available();
-            byte[] buffer = new byte[length];
-            in.read(buffer);
-            result = EncodingUtils.getString(buffer, "utf-8");
-        } catch (Exception e) {
-            e.printStackTrace();
+        /*
+        if (mVideoView.isPlaying()) {
+            mVideoView.stopPlayback();
         }
-        return result;
+
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+        }
+        mediaPlayer.release();
+         */
     }
 
     private void DisplayError(int resourceId) {
@@ -272,5 +333,4 @@ public class MainActivity extends Activity implements OnClickListener {
         });
         b.show();
     }
-
 }
