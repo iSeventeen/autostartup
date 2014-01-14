@@ -10,17 +10,17 @@ public class Utils {
 
     public static String parseHexData(String data) {
         StringBuffer sb = new StringBuffer();
-
-        if (data.startsWith("02") && data.endsWith("03")) {
-            String[] strings = data.replaceAll("\\s{1,}", " ").split(" ");
-            for (int i = 1; i < strings.length - 1; i++) {
-                sb.append(Integer.parseInt(strings[i], 16));
+        String string = data.replaceAll("\\s{1,}", "");
+        if (string.startsWith("02") && string.endsWith("0D0A03")) {
+            String value = string.substring(2, string.length() - 6);
+            for (int i = 0; i < value.length(); i++) {
+                if (i % 2 != 0) {
+                    sb.append(value.charAt(i));
+                }
             }
         }
-
         return sb.toString();
     }
-    
 
     // fetch file from assets fold
     public String getFromAssets(Context context, String fileName) {

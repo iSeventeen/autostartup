@@ -115,11 +115,13 @@ public class MainActivity extends Activity implements OnClickListener {
 
     @Override
     protected void onStart() {
-        mVideoView.setVideoURI(Uri.parse(FileUtils.getVideoPath(this)));
+        String url = FileUtils.getVideoPath(MainActivity.this);
+        mVideoView.setVideoURI(Uri.parse(url));
         mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 
             @Override
             public void onCompletion(MediaPlayer mp) {
+                mVideoView.setVideoURI(Uri.parse(FileUtils.getVideoPath(MainActivity.this)));
                 mVideoView.start();
             }
         });
@@ -226,14 +228,15 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     private void updateImageView(String hexData) {
-        String basePath = Environment.getExternalStorageDirectory().getAbsolutePath()
-                + "/Autostartup" + "/";
+        String basePath = FileUtils.getProjectPath() + "/";
         String cardNumber = Utils.parseHexData(hexData);
-        FileUtils.createPathByCardNo(MainActivity.this, cardNumber);
-        Bitmap parentBitmap = BitmapFactory.decodeFile(basePath + cardNumber + "/parent.jpg");
-        mParentImageView.setImageBitmap(parentBitmap);
-        Bitmap childBitmap = BitmapFactory.decodeFile(basePath + cardNumber + "/child.jpg");
-        mChildImageView.setImageBitmap(childBitmap);
+        if (null != cardNumber) {
+            FileUtils.createPathByCardNo(MainActivity.this, cardNumber);
+            Bitmap parentBitmap = BitmapFactory.decodeFile(basePath + cardNumber + "/parent.jpg");
+            mParentImageView.setImageBitmap(parentBitmap);
+            Bitmap childBitmap = BitmapFactory.decodeFile(basePath + cardNumber + "/child.jpg");
+            mChildImageView.setImageBitmap(childBitmap);
+        }
     }
 
     private void showOrHide(boolean isShowVideo) {
@@ -311,14 +314,10 @@ public class MainActivity extends Activity implements OnClickListener {
         mSerialPort = null;
 
         /*
-        if (mVideoView.isPlaying()) {
-            mVideoView.stopPlayback();
-        }
-
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.stop();
-        }
-        mediaPlayer.release();
+         * if (mVideoView.isPlaying()) { mVideoView.stopPlayback(); }
+         * 
+         * if (mediaPlayer.isPlaying()) { mediaPlayer.stop(); }
+         * mediaPlayer.release();
          */
     }
 
