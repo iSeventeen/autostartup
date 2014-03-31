@@ -1,19 +1,46 @@
-package com.android.activities;
+package com.android.autostartup.app;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 
-import com.android.serialport.SerialPort;
-import com.android.serialport.SerialPortFinder;
-import com.android.utils.ApplicationPreferences;
+import com.android.autostartup.controller.server.LowercaseEnumTypeAdapterFactory;
+import com.android.autostartup.serialport.SerialPort;
+import com.android.autostartup.serialport.SerialPortFinder;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class Application extends android.app.Application {
+
+    private static Gson mGson;
+    private static RequestQueue mRequestQueue;
 
     private ApplicationPreferences mPreferences;
 
     public SerialPortFinder mSerialPortFinder = new SerialPortFinder();
     private SerialPort mSerialPort = null;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapterFactory(new LowercaseEnumTypeAdapterFactory());
+        mGson = builder.create();
+
+        mRequestQueue = Volley.newRequestQueue(getApplicationContext());
+
+    }
+
+    public static Gson getGson() {
+        return mGson;
+    }
+
+    public static RequestQueue getRequestQueue() {
+        return mRequestQueue;
+    }
 
     public SerialPort getSerialPort() throws SecurityException, IOException,
             InvalidParameterException {

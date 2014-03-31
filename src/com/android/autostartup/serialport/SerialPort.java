@@ -14,7 +14,7 @@
  * limitations under the License. 
  */
 
-package com.android.serialport;
+package com.android.autostartup.serialport;
 
 import java.io.File;
 import java.io.FileDescriptor;
