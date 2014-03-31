@@ -1,4 +1,4 @@
-package com.android.activities;
+package com.android.autostartup.activities;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,49 +8,56 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.pm.ActivityInfo;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.KeyEvent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
 
 import com.android.autostartup.R;
-import com.android.serialport.SerialPort;
-import com.android.utils.FileUtils;
-import com.android.utils.Utils;
+import com.android.autostartup.app.Application;
+import com.android.autostartup.controller.StudentController;
+import com.android.autostartup.controller.StudentController.StudentUpdateCallback;
+import com.android.autostartup.model.Parent;
+import com.android.autostartup.model.Student;
+import com.android.autostartup.serialport.SerialPort;
+import com.android.autostartup.utils.FileUtils;
+import com.android.autostartup.utils.Utils;
+import com.squareup.picasso.Picasso;
 
 @TargetApi(Build.VERSION_CODES.ECLAIR)
-public class MainActivity extends Activity implements OnClickListener {
+public class MainActivity extends Activity implements StudentUpdateCallback, OnClickListener {
 
     private static final int DELAY_MILLIS = 5000;
 
-    private RelativeLayout mAvatarLayout;
+    private RelativeLayout mDetailInfoLayout;
     private RelativeLayout mVideoLayout;
+
+    private LinearLayout mParentsLayout;
+    private ImageView mStudentImageView;
+
+    private TextView mNameTextView;
+    private TextView mTemperatureTextView;
+    private TextView mNumberTextView;
+    private TextView mClassTextView;
+    private TextView mTimeTextView;
 
     private Button mVideoBtn;
     private Button mAvatarBtn;
 
-    private TextView mHealthTextView;
-
     private VideoView mVideoView;
     private MediaPlayer mediaPlayer;
-
-    private ImageView mParentImageView;
-    private ImageView mChildImageView;
 
     private int positionWhenPaused = -1;
 
@@ -103,7 +110,8 @@ public class MainActivity extends Activity implements OnClickListener {
         // hide title
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         // set full screen
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        // TODO
+        // setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         // keep screen on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -111,6 +119,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
         initSerialPort();
         initView();
+        StudentController.addStudentUpdateCallback(this);
+        StudentController.getStudentInformation("1234567890");
     }
 
     @Override
@@ -156,7 +166,7 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     private void initLayout() {
-        mAvatarLayout = (RelativeLayout) findViewById(R.id.layout_avatar);
+        mDetailInfoLayout = (RelativeLayout) findViewById(R.id.layout_avatar);
         mVideoLayout = (RelativeLayout) findViewById(R.id.layout_video);
     }
 
@@ -166,10 +176,19 @@ public class MainActivity extends Activity implements OnClickListener {
         mAvatarBtn = (Button) findViewById(R.id.btn_avatar);
         mAvatarBtn.setOnClickListener(this);
 
-        mHealthTextView = (TextView) findViewById(R.id.health_content);
+        // -------------------------------------------------------------------
+        mNameTextView = (TextView) findViewById(R.id.text_welcome);
+        mTemperatureTextView = (TextView) findViewById(R.id.text_temperature);
 
-        mChildImageView = (ImageView) findViewById(R.id.img_child);
-        mParentImageView = (ImageView) findViewById(R.id.img_parent);
+        // -------------------------------------------------------------------
+        mNumberTextView = (TextView) findViewById(R.id.text_student_number);
+        mClassTextView = (TextView) findViewById(R.id.text_student_class);
+        mTimeTextView = (TextView) findViewById(R.id.text_student_register_time);
+
+        // -------------------------------------------------------------------
+        mParentsLayout = (LinearLayout) findViewById(R.id.layout_parent_avatar);
+        mStudentImageView = (ImageView) findViewById(R.id.img_student);
+
     }
 
     private void initMediaPlayer() {
@@ -205,6 +224,8 @@ public class MainActivity extends Activity implements OnClickListener {
         }
     }
 
+    private String hexData;
+
     private void onDataReceived(final byte[] buffer, final int size) {
         runOnUiThread(new Runnable() {
             @Override
@@ -215,32 +236,27 @@ public class MainActivity extends Activity implements OnClickListener {
                 }
                 resetMediaPlayer();
 
-                String hexData = new String(buffer, 0, size);
-                mHealthTextView.setText(hexData);
-                updateImageView(hexData);
+                hexData = new String(buffer, 0, size);
 
-                showOrHide(false);
-                mediaPlayer.start();
-
-                handler.postDelayed(runnable, DELAY_MILLIS);
+                StudentController.getStudentInformation(hexData);
             }
         });
     }
 
-    private void updateImageView(String hexData) {
-        String basePath = FileUtils.getProjectPath() + "/";
-        String cardNumber = Utils.parseHexData(hexData);
-        if (null != cardNumber) {
-            FileUtils.createPathByCardNo(MainActivity.this, cardNumber);
-            Bitmap parentBitmap = BitmapFactory.decodeFile(basePath + cardNumber + "/parent.jpg");
-            mParentImageView.setImageBitmap(parentBitmap);
-            Bitmap childBitmap = BitmapFactory.decodeFile(basePath + cardNumber + "/child.jpg");
-            mChildImageView.setImageBitmap(childBitmap);
-        }
-    }
+    /*
+     * private ImageView mParentImageView; private ImageView mChildImageView;
+     * private void updateImageView2(String hexData) { String basePath =
+     * FileUtils.getProjectPath() + "/"; String cardNumber =
+     * Utils.parseHexData(hexData); if (null != cardNumber) {
+     * FileUtils.createPathByCardNo(MainActivity.this, cardNumber); Bitmap
+     * parentBitmap = BitmapFactory.decodeFile(basePath + cardNumber +
+     * "/parent.jpg"); mParentImageView.setImageBitmap(parentBitmap); Bitmap
+     * childBitmap = BitmapFactory.decodeFile(basePath + cardNumber +
+     * "/child.jpg"); mChildImageView.setImageBitmap(childBitmap); } }
+     */
 
     private void showOrHide(boolean isShowVideo) {
-        mAvatarLayout.setVisibility(isShowVideo ? View.GONE : View.VISIBLE);
+        mDetailInfoLayout.setVisibility(isShowVideo ? View.GONE : View.VISIBLE);
         mVideoLayout.setVisibility(isShowVideo ? View.VISIBLE : View.GONE);
     }
 
@@ -267,7 +283,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
             // ------------------------------------------------------------
             String hexData = "02 30 30 30 38 38 34 36 34 38 36 0D 0A 03";
-            updateImageView(hexData);
+            // updateImageView(hexData);
+            StudentController.getStudentInformation(hexData);
             // ------------------------------------------------------------
 
             showOrHide(false);
@@ -297,6 +314,7 @@ public class MainActivity extends Activity implements OnClickListener {
         release();
 
         super.onDestroy();
+        StudentController.removeStudentUpdateCallback(this);
     }
 
     @Override
@@ -331,5 +349,41 @@ public class MainActivity extends Activity implements OnClickListener {
             }
         });
         b.show();
+    }
+
+    @Override
+    public void updateStudent(Student student) {
+        // updateImageView(hexData);
+        updateViews(student);
+
+        showOrHide(false);
+        mediaPlayer.start();
+
+        // TODO
+        // handler.postDelayed(runnable, DELAY_MILLIS);
+    }
+
+    private void updateViews(Student student) {
+        // ----------------------------------------------------------------------------
+        mNameTextView.setText(getString(R.string.welcome, student.name));
+        mTemperatureTextView.setText(getString(R.string.student_temperature, "36.9"));
+        mNumberTextView.setText(getString(R.string.student_number, student.cardId));
+        mClassTextView.setText(getString(R.string.student_class, "豆豆班"));
+        mTimeTextView.setText(getString(R.string.student_register_time, Utils.formatDate()));
+
+        Picasso.with(this).load("http://192.168.1.133:9000/assets/files/child.png")
+                .into(mStudentImageView);
+
+        // -----------------------------------------------------------------------------
+        for (Parent parent : student.parents) {
+            String imgUrl = parent.avatar;
+            ImageView imageView = new ImageView(this);
+            imageView.setBackgroundResource(R.drawable.parent);
+            int width = 180;
+            int height = 110;
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width, height);
+            imageView.setLayoutParams(params);
+            mParentsLayout.addView(imageView);
+        }
     }
 }

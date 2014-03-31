@@ -1,6 +1,9 @@
-package com.android.utils;
+package com.android.autostartup.utils;
 
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import org.apache.http.util.EncodingUtils;
 
@@ -35,5 +38,10 @@ public class Utils {
             e.printStackTrace();
         }
         return result;
+    }
+
+    public static String formatDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
+        return sdf.format(new Date());
     }
 }

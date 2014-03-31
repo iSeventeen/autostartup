@@ -1,4 +1,4 @@
-package com.android.activities;
+package com.android.autostartup.activities;
 
 import java.io.File;
 import java.io.FileNotFoundException;
