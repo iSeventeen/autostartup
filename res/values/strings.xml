@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    
     <string name="app_name">AutoStartup</string>
     <string name="health_content">健康状况：正常</string>
     <string name="description_image_child">孩子照片</string>

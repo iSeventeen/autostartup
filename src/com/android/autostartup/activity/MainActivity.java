@@ -1,4 +1,4 @@
-package com.android.autostartup.activities;
+package com.android.autostartup.activity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -29,6 +30,7 @@ import com.android.autostartup.R;
 import com.android.autostartup.app.Application;
 import com.android.autostartup.controller.StudentController;
 import com.android.autostartup.controller.StudentController.StudentUpdateCallback;
+import com.android.autostartup.controller.server.Server;
 import com.android.autostartup.model.Parent;
 import com.android.autostartup.model.Student;
 import com.android.autostartup.serialport.SerialPort;
@@ -48,7 +50,6 @@ public class MainActivity extends Activity implements StudentUpdateCallback, OnC
     private ImageView mStudentImageView;
 
     private TextView mNameTextView;
-    private TextView mTemperatureTextView;
     private TextView mNumberTextView;
     private TextView mClassTextView;
     private TextView mTimeTextView;
@@ -71,7 +72,7 @@ public class MainActivity extends Activity implements StudentUpdateCallback, OnC
 
     // -------------------Serial------------------------
     private Application mApplication;
-    private SerialPort mSerialPort;
+    private SerialPort mSerialPort = null;
     // private OutputStream mOutputStream;
     private InputStream mInputStream;
     private ReadThread mReadThread;
@@ -111,7 +112,7 @@ public class MainActivity extends Activity implements StudentUpdateCallback, OnC
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         // set full screen
         // TODO
-        // setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         // keep screen on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -166,7 +167,7 @@ public class MainActivity extends Activity implements StudentUpdateCallback, OnC
     }
 
     private void initLayout() {
-        mDetailInfoLayout = (RelativeLayout) findViewById(R.id.layout_avatar);
+        mDetailInfoLayout = (RelativeLayout) findViewById(R.id.layout_student_info);
         mVideoLayout = (RelativeLayout) findViewById(R.id.layout_video);
     }
 
@@ -178,7 +179,6 @@ public class MainActivity extends Activity implements StudentUpdateCallback, OnC
 
         // -------------------------------------------------------------------
         mNameTextView = (TextView) findViewById(R.id.text_welcome);
-        mTemperatureTextView = (TextView) findViewById(R.id.text_temperature);
 
         // -------------------------------------------------------------------
         mNumberTextView = (TextView) findViewById(R.id.text_student_number);
@@ -202,7 +202,6 @@ public class MainActivity extends Activity implements StudentUpdateCallback, OnC
 
     private void initVideoView() {
         mVideoView = (VideoView) findViewById(R.id.videoview);
-
         mVideoView.requestFocus();
     }
 
@@ -284,7 +283,7 @@ public class MainActivity extends Activity implements StudentUpdateCallback, OnC
             // ------------------------------------------------------------
             String hexData = "02 30 30 30 38 38 34 36 34 38 36 0D 0A 03";
             // updateImageView(hexData);
-            StudentController.getStudentInformation(hexData);
+            StudentController.getStudentInformation(hexData.replaceAll(" ", ""));
             // ------------------------------------------------------------
 
             showOrHide(false);
@@ -315,6 +314,7 @@ public class MainActivity extends Activity implements StudentUpdateCallback, OnC
 
         super.onDestroy();
         StudentController.removeStudentUpdateCallback(this);
+        Application.getRequestQueue().cancelAll(Server.TAG);
     }
 
     @Override
@@ -326,8 +326,9 @@ public class MainActivity extends Activity implements StudentUpdateCallback, OnC
     }
 
     private void release() {
-        if (mReadThread != null)
+        if (mReadThread != null) {
             mReadThread.interrupt();
+        }
         mApplication.closeSerialPort();
         mSerialPort = null;
 
@@ -366,22 +367,22 @@ public class MainActivity extends Activity implements StudentUpdateCallback, OnC
     private void updateViews(Student student) {
         // ----------------------------------------------------------------------------
         mNameTextView.setText(getString(R.string.welcome, student.name));
-        mTemperatureTextView.setText(getString(R.string.student_temperature, "36.9"));
-        mNumberTextView.setText(getString(R.string.student_number, student.cardId));
+        mNumberTextView.setText(getString(R.string.student_number, student.cardId.substring(0, 9)));
         mClassTextView.setText(getString(R.string.student_class, "豆豆班"));
         mTimeTextView.setText(getString(R.string.student_register_time, Utils.formatDate()));
 
-        Picasso.with(this).load("http://192.168.1.133:9000/assets/files/child.png")
-                .into(mStudentImageView);
+        Picasso.with(this).load(Server.BASE_URL + student.avatar).into(mStudentImageView);
 
         // -----------------------------------------------------------------------------
+        mParentsLayout.removeAllViews();
         for (Parent parent : student.parents) {
             String imgUrl = parent.avatar;
             ImageView imageView = new ImageView(this);
             imageView.setBackgroundResource(R.drawable.parent);
             int width = 180;
-            int height = 110;
+            int height = 105;
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width, height);
+            params.bottomMargin = 5;
             imageView.setLayoutParams(params);
             mParentsLayout.addView(imageView);
         }

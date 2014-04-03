@@ -46,7 +46,6 @@ public class StudentController {
     }
 
     public static void getStudentInformation(String cardId) {
-        cardId = "1234567890";
         Server.requestStudent(cardId, new Server.GetStudentCallback() {
 
             @Override

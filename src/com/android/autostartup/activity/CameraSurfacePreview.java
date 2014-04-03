@@ -1,4 +1,4 @@
-package com.android.autostartup.activities;
+package com.android.autostartup.activity;
 
 import java.io.IOException;
 

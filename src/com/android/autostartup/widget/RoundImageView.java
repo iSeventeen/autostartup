@@ -32,7 +32,7 @@ public class RoundImageView extends ImageView {
         maskPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         //
         zonePaint.setAntiAlias(true);
-        zonePaint.setColor(Color.WHITE);
+        zonePaint.setColor(Color.BLACK);
         //
         float density = getResources().getDisplayMetrics().density;
         rect_adius = rect_adius * density;
