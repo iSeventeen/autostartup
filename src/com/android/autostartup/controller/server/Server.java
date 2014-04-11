@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.android.autostartup.app.Application;
 import com.android.autostartup.model.Student;
+import com.android.autostartup.model.StudentIdInfo;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -16,7 +17,7 @@ public class Server {
 
     public static final String TAG = Server.class.getSimpleName();
 
-    public static final String BASE_URL = "http://192.168.0.105:9000/";
+    public static final String BASE_URL = "http://192.168.1.133:9000/";
     public static final String API_BASE_URL = BASE_URL + "api/";
 
     public static enum API {
@@ -80,9 +81,57 @@ public class Server {
         }
     }
 
+    public static void requestAllStudent(final GetStudentsCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/all");
+        GsonRequest<Student[]> gsonRequest = new GsonRequest<Student[]>(url.toString(),
+                Student[].class, null, new Response.Listener<Student[]>() {
+                    @Override
+                    public void onResponse(Student[] students) {
+                        callback.onSuccess(students);
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        gsonRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 2, 1));
+        executeRequest(gsonRequest, TAG);
+    }
+
+    public interface GetStudentsCallback {
+        public void onSuccess(Student[] students);
+    }
+
+    public static void requestAllStudentIds(final GetStudentsCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/ids");
+        GsonRequest<Student[]> gsonRequest = new GsonRequest<Student[]>(url.toString(),
+                Student[].class, null, new Response.Listener<Student[]>() {
+                    @Override
+                    public void onResponse(Student[] students) {
+                        callback.onSuccess(students);
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        gsonRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 2, 1));
+        executeRequest(gsonRequest, TAG);
+
+    }
+
+    public static void requestStudentsByIds(String ids, final GetStudentsCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/" + ids);
+        GsonRequest<Student[]> gsonRequest = new GsonRequest<Student[]>(url.toString(),
+                Student[].class, null, new Response.Listener<Student[]>() {
+                    @Override
+                    public void onResponse(Student[] students) {
+                        callback.onSuccess(students);
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        gsonRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 2, 1));
+        executeRequest(gsonRequest, TAG);
+    }
+
     public static void requestStudent(final String cardId, final GetStudentCallback callback,
             final ErrorCallback errorCallback) {
-        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/" + cardId);
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/" + cardId
+                + "/student");
 
         GsonRequest<Student> gsonRequest = new GsonRequest<Student>(url.toString(), Student.class,
                 null, new Response.Listener<Student>() {

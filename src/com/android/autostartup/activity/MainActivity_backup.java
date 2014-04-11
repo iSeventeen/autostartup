@@ -3,7 +3,6 @@ package com.android.autostartup.activity;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidParameterException;
-import java.util.List;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -15,7 +14,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,18 +28,18 @@ import android.widget.VideoView;
 
 import com.android.autostartup.R;
 import com.android.autostartup.app.Application;
+import com.android.autostartup.controller.StudentController;
+import com.android.autostartup.controller.StudentController.StudentUpdateCallback;
 import com.android.autostartup.controller.server.Server;
-import com.android.autostartup.dao.StudentDao;
+import com.android.autostartup.model.Parent;
 import com.android.autostartup.model.Student;
 import com.android.autostartup.serialport.SerialPort;
-import com.android.autostartup.service.DBSyncService;
-import com.android.autostartup.service.PollingUtils;
 import com.android.autostartup.utils.FileUtils;
 import com.android.autostartup.utils.Utils;
 import com.squareup.picasso.Picasso;
 
 @TargetApi(Build.VERSION_CODES.ECLAIR)
-public class MainActivity extends Activity implements OnClickListener {
+public class MainActivity_backup extends Activity implements StudentUpdateCallback, OnClickListener {
 
     private static final int DELAY_MILLIS = 5000;
 
@@ -63,10 +61,6 @@ public class MainActivity extends Activity implements OnClickListener {
     private MediaPlayer mediaPlayer;
 
     private int positionWhenPaused = -1;
-
-    private StudentDao studentDao;
-
-    private String hexData;
 
     private Handler handler = new Handler();
     private Runnable runnable = new Runnable() {
@@ -111,8 +105,6 @@ public class MainActivity extends Activity implements OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        PollingUtils.startPollingService(this, 24 * 60 * 60, DBSyncService.class,
-                DBSyncService.ACTION);
 
         FileUtils.createFolders(this);
 
@@ -126,26 +118,21 @@ public class MainActivity extends Activity implements OnClickListener {
 
         setContentView(R.layout.activity_main);
 
-        studentDao = new StudentDao(this);
-        List<Student> students = studentDao.getAll();
-        for(Student student: students) {
-            Log.i("MainActivity>all>", student.toString());
-        }
-        
         initSerialPort();
         initView();
-        updateViews("1234560");
+        StudentController.addStudentUpdateCallback(this);
+        StudentController.getStudentInformation("1234567890");
     }
 
     @Override
     protected void onStart() {
-        String url = FileUtils.getVideoPath(MainActivity.this);
+        String url = FileUtils.getVideoPath(MainActivity_backup.this);
         mVideoView.setVideoURI(Uri.parse(url));
         mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 
             @Override
             public void onCompletion(MediaPlayer mp) {
-                mVideoView.setVideoURI(Uri.parse(FileUtils.getVideoPath(MainActivity.this)));
+                mVideoView.setVideoURI(Uri.parse(FileUtils.getVideoPath(MainActivity_backup.this)));
                 mVideoView.start();
             }
         });
@@ -236,6 +223,8 @@ public class MainActivity extends Activity implements OnClickListener {
         }
     }
 
+    private String hexData;
+
     private void onDataReceived(final byte[] buffer, final int size) {
         runOnUiThread(new Runnable() {
             @Override
@@ -247,10 +236,23 @@ public class MainActivity extends Activity implements OnClickListener {
                 resetMediaPlayer();
 
                 hexData = new String(buffer, 0, size);
-                updateViews(hexData);
+
+                StudentController.getStudentInformation(hexData);
             }
         });
     }
+
+    /*
+     * private ImageView mParentImageView; private ImageView mChildImageView;
+     * private void updateImageView2(String hexData) { String basePath =
+     * FileUtils.getProjectPath() + "/"; String cardNumber =
+     * Utils.parseHexData(hexData); if (null != cardNumber) {
+     * FileUtils.createPathByCardNo(MainActivity.this, cardNumber); Bitmap
+     * parentBitmap = BitmapFactory.decodeFile(basePath + cardNumber +
+     * "/parent.jpg"); mParentImageView.setImageBitmap(parentBitmap); Bitmap
+     * childBitmap = BitmapFactory.decodeFile(basePath + cardNumber +
+     * "/child.jpg"); mChildImageView.setImageBitmap(childBitmap); } }
+     */
 
     private void showOrHide(boolean isShowVideo) {
         mDetailInfoLayout.setVisibility(isShowVideo ? View.GONE : View.VISIBLE);
@@ -280,7 +282,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
             // ------------------------------------------------------------
             String hexData = "02 30 30 30 38 38 34 36 34 38 36 0D 0A 03";
-            updateViews("1234561");
+            // updateImageView(hexData);
+            StudentController.getStudentInformation(hexData.replaceAll(" ", ""));
             // ------------------------------------------------------------
 
             showOrHide(false);
@@ -310,7 +313,8 @@ public class MainActivity extends Activity implements OnClickListener {
         release();
 
         super.onDestroy();
-        PollingUtils.stopPollingService(this, DBSyncService.class, DBSyncService.ACTION);
+        StudentController.removeStudentUpdateCallback(this);
+        Application.getRequestQueue().cancelAll(Server.TAG);
     }
 
     @Override
@@ -328,6 +332,12 @@ public class MainActivity extends Activity implements OnClickListener {
         mApplication.closeSerialPort();
         mSerialPort = null;
 
+        /*
+         * if (mVideoView.isPlaying()) { mVideoView.stopPlayback(); }
+         * 
+         * if (mediaPlayer.isPlaying()) { mediaPlayer.stop(); }
+         * mediaPlayer.release();
+         */
     }
 
     private void DisplayError(int resourceId) {
@@ -342,11 +352,10 @@ public class MainActivity extends Activity implements OnClickListener {
         b.show();
     }
 
-    public void updateViews(String cardId) {
-        Student student = studentDao.findByCardId("1234560");
-        if (null != student) {
-            updateViews(student);
-        }
+    @Override
+    public void updateStudent(Student student) {
+        // updateImageView(hexData);
+        updateViews(student);
 
         showOrHide(false);
         mediaPlayer.start();
@@ -358,9 +367,7 @@ public class MainActivity extends Activity implements OnClickListener {
     private void updateViews(Student student) {
         // ----------------------------------------------------------------------------
         mNameTextView.setText(getString(R.string.welcome, student.name));
-        String cardNumber = student.cardId.length() < 10 ? student.cardId : student.cardId
-                .substring(0, 9);
-        mNumberTextView.setText(getString(R.string.student_number, cardNumber));
+        mNumberTextView.setText(getString(R.string.student_number, student.cardId.substring(0, 9)));
         mClassTextView.setText(getString(R.string.student_class, "豆豆班"));
         mTimeTextView.setText(getString(R.string.student_register_time, Utils.formatDate()));
 
@@ -368,7 +375,6 @@ public class MainActivity extends Activity implements OnClickListener {
 
         // -----------------------------------------------------------------------------
         mParentsLayout.removeAllViews();
-        //TODO: fetch parents from local sqlite
         /*
         for (Parent parent : student.parents) {
             String imgUrl = parent.avatar;
