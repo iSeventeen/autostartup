@@ -1,8 +1,5 @@
 package com.android.autostartup.controller.db;
 
-import com.android.autostartup.dao.ParentDao;
-import com.android.autostartup.dao.StudentDao;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -10,12 +7,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.android.autostartup.dao.ParentDao;
+import com.android.autostartup.dao.StudentDao;
+
 public class SQLiteHelper extends SQLiteOpenHelper {
 
     private static final String TAG = SQLiteHelper.class.getSimpleName();
 
-    private static final String DATABASE_NAME = "garten.db_2";
-    private static final int DATABASE_VERSION = 7;
+    private static final String DATABASE_NAME = "garten.local.db";
+    private static final int DATABASE_VERSION = 1;
 
     private static final String[] createTableList = { StudentDao.SQL_CREATE_STUDENT,
             ParentDao.SQL_CREATE_PARENT };

@@ -119,7 +119,6 @@ public class MainActivity extends Activity implements OnClickListener {
         // hide title
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         // set full screen
-        // TODO
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         // keep screen on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);

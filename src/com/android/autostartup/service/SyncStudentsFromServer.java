@@ -11,9 +11,9 @@ import com.android.autostartup.controller.server.Server;
 import com.android.autostartup.dao.StudentDao;
 import com.android.autostartup.model.Student;
 
-public class StudentService {
+public class SyncStudentsFromServer {
 
-    private static final String TAG = StudentService.class.getSimpleName();
+    private static final String TAG = SyncStudentsFromServer.class.getSimpleName();
 
     private StudentDao studentDao;
 
@@ -21,19 +21,16 @@ public class StudentService {
     private List<String> newIds = new ArrayList<String>();
     private List<String> updatedIds = new ArrayList<String>();
 
-    public StudentService(Context context) {
+    public SyncStudentsFromServer(Context context) {
         studentDao = new StudentDao(context);
     }
 
-    public void updateStudentData() {
+    public void updateStudentDataFromServer() {
         Server.requestAllStudentIds(new Server.GetStudentsCallback() {
             @Override
             public void onSuccess(Student[] students) {
-                for (Student student : students) {
-                    Log.i(TAG, "updateStudentData:" + student);
-                }
                 studentsFromServer = students;
-                updateData();
+                syncData();
             }
         }, new Server.ErrorCallback() {
 
@@ -44,7 +41,7 @@ public class StudentService {
         });
     }
 
-    private void updateData() {
+    private void syncData() {
         List<Student> studentFromLocal = studentDao.getAll();
         if (null == studentFromLocal || studentFromLocal.isEmpty()) {
             Log.i(TAG, "save all ids");
@@ -52,58 +49,59 @@ public class StudentService {
         } else {
             seperateData(studentFromLocal);
 
-            if (!updatedIds.isEmpty()) {
-                Log.i(TAG, "update updated ids:" + TextUtils.join(",", updatedIds));
-                updateStudents(TextUtils.join(",", updatedIds));
-                updatedIds.clear();
-            }
-
-            if (!newIds.isEmpty()) {
-                Log.i(TAG, "save new ids" + TextUtils.join(",", newIds));
-                saveNewStudents(TextUtils.join(",", newIds));
-                newIds.clear();
-            }
+            saveStudents();
+            updateStudents();
 
         }
     }
 
     private void seperateData(List<Student> students) {
-        List<Student> localStudentList = students;
-        List<Student> serverStudentList = new ArrayList<Student>();
+        // TODO Refactor
+        List<Student> localStudents = students;
+        List<Student> serverStudents = new ArrayList<Student>();
         for (Student student : studentsFromServer) {
-            Log.i(TAG, "server>student="+student.toString());
-            serverStudentList.add(student);
+            serverStudents.add(student);
         }
-        for (Student student : localStudentList) {
-            Log.i(TAG, "before>" + student.toString());
-        }
-        
-        Log.i(TAG, "ServerStudentList.size="+serverStudentList.size());
+        Log.i(TAG, "ServerStudentList.size=" + serverStudents.size());
 
-        for (int i = serverStudentList.size() - 1; i > -1; i--) {
-            for (int j = localStudentList.size() - 1; j > -1; j--) {
-                if (serverStudentList.get(i).cardId.equals(localStudentList.get(j).cardId)) {
-                    if (serverStudentList.get(i).updatedAt != localStudentList.get(j).updatedAt) {
-                        updatedIds.add(serverStudentList.get(i).cardId);
+        for (int i = serverStudents.size() - 1; i > -1; i--) {
+            Student serverObj = serverStudents.get(i);
+            String serverCardId = serverObj.cardId;
+            for (int j = localStudents.size() - 1; j > -1; j--) {
+                Student localObj = localStudents.get(j);
+
+                if (serverCardId.equals(localObj.cardId)) {
+                    if (serverObj.updatedAt != localObj.updatedAt) {
+                        updatedIds.add(serverCardId);
                     }
-                    localStudentList.remove(j);
-                    serverStudentList.remove(i);
-                    Log.i(TAG, "i="+i);
-                    Log.i(TAG, "j="+j);
+                    localStudents.remove(j);
+                    serverStudents.remove(i);
                     break;
                 }
             }
         }
 
-        for (Student student : serverStudentList) {
-            Log.i(TAG, "after>" + student.toString());
+        Log.i(TAG, "serverstudentlist.size=" + serverStudents.size());
+        for (Student student : serverStudents) {
+            newIds.add(student.cardId);
         }
+    }
 
-        Log.i(TAG, "serverstudentlist.size="+serverStudentList.size());
-        if (!serverStudentList.isEmpty()) {
-            for (Student student : serverStudentList) {
-                newIds.add(student.cardId);
-            }
+    private void saveStudents() {
+        if (!updatedIds.isEmpty()) {
+            String ids = TextUtils.join(",", updatedIds);
+            Log.i(TAG, "update updated ids:" + ids);
+            updateStudents(ids);
+            updatedIds.clear();
+        }
+    }
+
+    private void updateStudents() {
+        if (!newIds.isEmpty()) {
+            String ids = TextUtils.join(",", newIds);
+            Log.i(TAG, "save new ids" + ids);
+            saveNewStudents(ids);
+            newIds.clear();
         }
     }
 

@@ -1,12 +1,14 @@
 package com.android.autostartup.controller.server;
 
+import java.net.InterfaceAddress;
+import java.util.HashMap;
 import java.util.Map;
 
 import android.util.Log;
 
 import com.android.autostartup.app.Application;
+import com.android.autostartup.model.CommonResult;
 import com.android.autostartup.model.Student;
-import com.android.autostartup.model.StudentIdInfo;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -147,6 +149,62 @@ public class Server {
 
     public interface GetStudentCallback {
         public void onSuccess(Student student);
+    }
+
+    public static void saveStudent(final Student student, final CommonCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/save");
+
+        GsonRequest<CommonResult> gsonRequest = new GsonRequest<CommonResult>(Request.Method.POST,
+                url.toString(), CommonResult.class, null, getParams(student),
+                new Response.Listener<CommonResult>() {
+                    @Override
+                    public void onResponse(CommonResult result) {
+                        if (result.status.equals("OK")) {
+                            callback.onSuccess(result.status);
+                        } else {
+                            errorCallback.onFail("save student error");
+                        }
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        executeRequest(gsonRequest);
+    }
+
+    public static void updateStudent(final Student student, final CommonCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/update");
+
+        GsonRequest<CommonResult> gsonRequest = new GsonRequest<CommonResult>(Request.Method.PUT,
+                url.toString(), CommonResult.class, null, getParams(student),
+                new Response.Listener<CommonResult>() {
+                    @Override
+                    public void onResponse(CommonResult result) {
+                        if (result.status.equals("OK")) {
+                            callback.onSuccess(result.status);
+                        } else {
+                            errorCallback.onFail("update student error");
+                        }
+
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        executeRequest(gsonRequest);
+    }
+
+    private static Map<String, String> getParams(Student student) {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("cardId", student.cardId);
+        params.put("name", student.name);
+        params.put("gender", String.valueOf(student.gender));
+        params.put("age", String.valueOf(student.age));
+        params.put("avatar", student.avatar);
+        params.put("createdAt", String.valueOf(student.createdAt));
+        params.put("updatedAt", String.valueOf(student.updatedAt));
+
+        return params;
+    }
+
+    public interface CommonCallback {
+        public void onSuccess(String status);
     }
 
 }

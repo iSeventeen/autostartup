@@ -11,7 +11,7 @@ public class DBSyncService extends Service {
 
     public static final String ACTION = "com.android.autostartup.service.DBSyncService";
 
-    private StudentService studentService;
+    private SyncStudentsFromServer studentService;
 
     @Override
     public IBinder onBind(Intent arg0) {
@@ -23,14 +23,14 @@ public class DBSyncService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "onCreate...");
-        studentService = new StudentService(getApplicationContext());
+        studentService = new SyncStudentsFromServer(getApplicationContext());
     }
 
     @Override
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
         Log.i(TAG, "onStart...");
-        studentService.updateStudentData();
+        studentService.updateStudentDataFromServer();
     }
 
     @Override
