@@ -1,6 +1,7 @@
 package com.android.autostartup.utils;
 
 import java.io.InputStream;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -43,5 +44,21 @@ public class Utils {
     public static String formatDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
         return sdf.format(new Date());
+    }
+    
+    public static String formatDate(Date value) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:dd:mm:ss", Locale.CHINA);
+        return sdf.format(value);
+    }
+    
+    public static Date parseDate(String value) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:dd:mm:ss", Locale.CHINA);
+            return sdf.parse(value);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

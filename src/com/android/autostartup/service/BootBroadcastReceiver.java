@@ -1,8 +1,10 @@
-package com.android.autostartup.activity;
+package com.android.autostartup.service;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+
+import com.android.autostartup.activity.MainActivity;
 
 public class BootBroadcastReceiver extends BroadcastReceiver {
 
@@ -11,10 +13,10 @@ public class BootBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(ACTION)) {
-            Intent sayHelloIntent = new Intent(context, MainActivity.class);
-            sayHelloIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-            context.startActivity(sayHelloIntent);
+            Intent mainIntent = new Intent(context, MainActivity.class);
+            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(mainIntent);
         }
     }
 

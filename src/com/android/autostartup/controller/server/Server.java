@@ -1,10 +1,13 @@
 package com.android.autostartup.controller.server;
 
+import java.net.InterfaceAddress;
+import java.util.HashMap;
 import java.util.Map;
 
 import android.util.Log;
 
 import com.android.autostartup.app.Application;
+import com.android.autostartup.model.CommonResult;
 import com.android.autostartup.model.Student;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -16,7 +19,7 @@ public class Server {
 
     public static final String TAG = Server.class.getSimpleName();
 
-    public static final String BASE_URL = "http://192.168.0.105:9000/";
+    public static final String BASE_URL = "http://192.168.1.133:9000/";
     public static final String API_BASE_URL = BASE_URL + "api/";
 
     public static enum API {
@@ -80,9 +83,57 @@ public class Server {
         }
     }
 
+    public static void requestAllStudent(final GetStudentsCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/all");
+        GsonRequest<Student[]> gsonRequest = new GsonRequest<Student[]>(url.toString(),
+                Student[].class, null, new Response.Listener<Student[]>() {
+                    @Override
+                    public void onResponse(Student[] students) {
+                        callback.onSuccess(students);
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        gsonRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 2, 1));
+        executeRequest(gsonRequest, TAG);
+    }
+
+    public interface GetStudentsCallback {
+        public void onSuccess(Student[] students);
+    }
+
+    public static void requestAllStudentIds(final GetStudentsCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/ids");
+        GsonRequest<Student[]> gsonRequest = new GsonRequest<Student[]>(url.toString(),
+                Student[].class, null, new Response.Listener<Student[]>() {
+                    @Override
+                    public void onResponse(Student[] students) {
+                        callback.onSuccess(students);
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        gsonRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 2, 1));
+        executeRequest(gsonRequest, TAG);
+
+    }
+
+    public static void requestStudentsByIds(String ids, final GetStudentsCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/" + ids);
+        GsonRequest<Student[]> gsonRequest = new GsonRequest<Student[]>(url.toString(),
+                Student[].class, null, new Response.Listener<Student[]>() {
+                    @Override
+                    public void onResponse(Student[] students) {
+                        callback.onSuccess(students);
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        gsonRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 2, 1));
+        executeRequest(gsonRequest, TAG);
+    }
+
     public static void requestStudent(final String cardId, final GetStudentCallback callback,
             final ErrorCallback errorCallback) {
-        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/" + cardId);
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/" + cardId
+                + "/student");
 
         GsonRequest<Student> gsonRequest = new GsonRequest<Student>(url.toString(), Student.class,
                 null, new Response.Listener<Student>() {
@@ -98,6 +149,62 @@ public class Server {
 
     public interface GetStudentCallback {
         public void onSuccess(Student student);
+    }
+
+    public static void saveStudent(final Student student, final CommonCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/save");
+
+        GsonRequest<CommonResult> gsonRequest = new GsonRequest<CommonResult>(Request.Method.POST,
+                url.toString(), CommonResult.class, null, getParams(student),
+                new Response.Listener<CommonResult>() {
+                    @Override
+                    public void onResponse(CommonResult result) {
+                        if (result.status.equals("OK")) {
+                            callback.onSuccess(result.status);
+                        } else {
+                            errorCallback.onFail("save student error");
+                        }
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        executeRequest(gsonRequest);
+    }
+
+    public static void updateStudent(final Student student, final CommonCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/update");
+
+        GsonRequest<CommonResult> gsonRequest = new GsonRequest<CommonResult>(Request.Method.PUT,
+                url.toString(), CommonResult.class, null, getParams(student),
+                new Response.Listener<CommonResult>() {
+                    @Override
+                    public void onResponse(CommonResult result) {
+                        if (result.status.equals("OK")) {
+                            callback.onSuccess(result.status);
+                        } else {
+                            errorCallback.onFail("update student error");
+                        }
+
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        executeRequest(gsonRequest);
+    }
+
+    private static Map<String, String> getParams(Student student) {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("cardId", student.cardId);
+        params.put("name", student.name);
+        params.put("gender", String.valueOf(student.gender));
+        params.put("age", String.valueOf(student.age));
+        params.put("avatar", student.avatar);
+        params.put("createdAt", String.valueOf(student.createdAt));
+        params.put("updatedAt", String.valueOf(student.updatedAt));
+
+        return params;
+    }
+
+    public interface CommonCallback {
+        public void onSuccess(String status);
     }
 
 }

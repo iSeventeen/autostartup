@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    
+
     <string name="app_name">AutoStartup</string>
     <string name="health_content">健康状况：正常</string>
     <string name="description_image_child">孩子照片</string>
@@ -9,7 +9,7 @@
     <string name="btn_hi">问候</string>
     <string name="btn_avatar">头像</string>
     <!--  -->
-    <string name="header_title">幼儿园接送管理系统</string>
+    <string name="header_title">未来幼儿园接送管理</string>
     <string name="welcome">欢迎 %1$s 小朋友入园</string>
     <string name="student_temperature">今日体温：%1$s℃</string>
     <string name="student_number">学号：%1$s</string>
@@ -17,7 +17,7 @@
     <string name="student_register_time">入园时间：%1$s</string>
     <string name="text_warm_prompt">温馨提示</string>
     <string name="text_cctv">监控录像</string>
-    
+
     <!--  -->
     <string name="error_configuration">Please configure your serial port first.</string>
     <string name="error_security">You do not have read/write permission to the serial
