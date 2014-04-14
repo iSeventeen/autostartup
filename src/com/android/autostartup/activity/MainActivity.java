@@ -11,8 +11,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,7 +31,6 @@ import android.widget.VideoView;
 
 import com.android.autostartup.R;
 import com.android.autostartup.app.Application;
-import com.android.autostartup.controller.server.Server;
 import com.android.autostartup.dao.StudentDao;
 import com.android.autostartup.model.Student;
 import com.android.autostartup.serialport.SerialPort;
@@ -39,7 +38,6 @@ import com.android.autostartup.service.DBSyncService;
 import com.android.autostartup.service.PollingUtils;
 import com.android.autostartup.utils.FileUtils;
 import com.android.autostartup.utils.Utils;
-import com.squareup.picasso.Picasso;
 
 @TargetApi(Build.VERSION_CODES.ECLAIR)
 public class MainActivity extends Activity implements OnClickListener {
@@ -112,8 +110,6 @@ public class MainActivity extends Activity implements OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        PollingUtils.startPollingService(this, 24 * 60 * 60, DBSyncService.class,
-                DBSyncService.ACTION);
 
         FileUtils.createFolders(this);
 
@@ -128,10 +124,10 @@ public class MainActivity extends Activity implements OnClickListener {
 
         studentDao = new StudentDao(this);
         List<Student> students = studentDao.getAll();
-        for(Student student: students) {
+        for (Student student : students) {
             Log.i("MainActivity>all>", student.toString());
         }
-        
+
         initSerialPort();
         initView();
         updateViews("1234560");
@@ -139,18 +135,19 @@ public class MainActivity extends Activity implements OnClickListener {
 
     @Override
     protected void onStart() {
-        String url = FileUtils.getVideoPath(MainActivity.this);
-        mVideoView.setVideoURI(Uri.parse(url));
+        super.onStart();
+        final String url = FileUtils.getVideoPath(MainActivity.this);
+        mVideoView.setVideoPath(url);
         mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 
             @Override
             public void onCompletion(MediaPlayer mp) {
-                mVideoView.setVideoURI(Uri.parse(FileUtils.getVideoPath(MainActivity.this)));
+                // mVideoView.setVideoURI(Uri.parse(FileUtils.getVideoPath(MainActivity.this)));
+                mVideoView.setVideoPath(url);
                 mVideoView.start();
             }
         });
         mVideoView.start();
-        super.onStart();
     }
 
     private void initSerialPort() {
@@ -205,12 +202,9 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     private void initMediaPlayer() {
-        try {
-            mediaPlayer = FileUtils.getAudioPlayer(this);
-            // mediaPlayer.prepare();
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-        }
+        mediaPlayer = FileUtils.getAudioPlayer(this);
+
+        // mediaPlayer.prepare();
     }
 
     private void initVideoView() {
@@ -343,8 +337,8 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     public void updateViews(String cardId) {
-        
-        Student student = studentDao.findByCardId("1234560");
+
+        Student student = studentDao.findByCardId(cardId);
         if (null != student) {
             updateViews(student);
         }
@@ -365,14 +359,17 @@ public class MainActivity extends Activity implements OnClickListener {
         mClassTextView.setText(getString(R.string.student_class, "豆豆班"));
         mTimeTextView.setText(getString(R.string.student_register_time, Utils.formatDate()));
 
-        Picasso.with(this).load(Server.BASE_URL + student.avatar).into(mStudentImageView);
+        String filePath = FileUtils.PICS_EXTERNAL_DIR + student.avatar;
+        Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+        mStudentImageView.setImageBitmap(bitmap);
 
         // -----------------------------------------------------------------------------
         mParentsLayout.removeAllViews();
-        //TODO: fetch parents from local sqlite
-        /*
-        for (Parent parent : student.parents) {
-            String imgUrl = parent.avatar;
+        // TODO: fetch parents from local sqlite
+
+        // for (Parent parent : student.parents) {
+        for (int i = 0; i < 5; i++) {
+            // String imgUrl = parent.avatar;
             ImageView imageView = new ImageView(this);
             imageView.setBackgroundResource(R.drawable.parent);
             int width = 180;
@@ -382,6 +379,6 @@ public class MainActivity extends Activity implements OnClickListener {
             imageView.setLayoutParams(params);
             mParentsLayout.addView(imageView);
         }
-        */
+
     }
 }

@@ -94,7 +94,7 @@ public class SyncStudentsFromServer {
         }
     }
 
-    private void saveStudents() {
+    private void updateStudents() {
         if (!updatedIds.isEmpty()) {
             String ids = TextUtils.join(",", updatedIds);
             Log.i(TAG, "update updated ids:" + ids);
@@ -103,7 +103,7 @@ public class SyncStudentsFromServer {
         }
     }
 
-    private void updateStudents() {
+    private void saveStudents() {
         if (!newIds.isEmpty()) {
             String ids = TextUtils.join(",", newIds);
             Log.i(TAG, "save new ids" + ids);
