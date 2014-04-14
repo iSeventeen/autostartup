@@ -1,6 +1,5 @@
 package com.android.autostartup.controller.server;
 
-import java.net.InterfaceAddress;
 import java.util.HashMap;
 import java.util.Map;
 

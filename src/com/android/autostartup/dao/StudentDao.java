@@ -6,9 +6,12 @@ import java.util.List;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.os.AsyncTask;
 
 import com.android.autostartup.controller.db.SQLiteHelper;
+import com.android.autostartup.controller.server.Server;
 import com.android.autostartup.model.Student;
+import com.android.autostartup.utils.FileUtils;
 
 public class StudentDao {
 
@@ -31,9 +34,11 @@ public class StudentDao {
 
     public static final String SQL_DROP_STUDENT = " DROP TABLE IF EXISTS " + TABLE_STUDENT;
 
+    private Context context;
     private SQLiteHelper helper;
 
     public StudentDao(Context context) {
+        this.context = context;
         helper = new SQLiteHelper(context);
     }
 
@@ -69,7 +74,8 @@ public class StudentDao {
     }
 
     public void updateByCardId(Student student) {
-        helper.update(TABLE_STUDENT, buildValues(student), FIELD_STUDENT_CARD_ID+"=?", student.cardId);
+        helper.update(TABLE_STUDENT, buildValues(student), FIELD_STUDENT_CARD_ID + "=?",
+                student.cardId);
     }
 
     public void save(Student[] students) {
@@ -99,6 +105,27 @@ public class StudentDao {
         return new Student(cursor.getInt(0), cursor.getString(1), cursor.getString(2),
                 cursor.getInt(3), cursor.getInt(4), cursor.getString(5), cursor.getLong(6),
                 cursor.getLong(7));
+    }
+
+    public void loadAndSavePics(Student[] students) {
+        new DownloadPicsTask().execute(students);
+    }
+
+    private class DownloadPicsTask extends AsyncTask<Student[], Void, Void> {
+        @Override
+        protected Void doInBackground(Student[]... params) {
+
+            for (Student student : params[0]) {
+                FileUtils.loadAndSavePic(context, Server.BASE_URL + student.avatar);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            // TODO Auto-generated method stub
+            super.onPostExecute(result);
+        }
     }
 
 }

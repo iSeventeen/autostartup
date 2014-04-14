@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -342,6 +343,7 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     public void updateViews(String cardId) {
+        
         Student student = studentDao.findByCardId("1234560");
         if (null != student) {
             updateViews(student);
