@@ -1,5 +1,6 @@
 package com.android.autostartup.dao;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.android.autostartup.controller.db.SQLiteHelper;
 import com.android.autostartup.controller.server.Server;
@@ -14,6 +16,8 @@ import com.android.autostartup.model.Student;
 import com.android.autostartup.utils.FileUtils;
 
 public class StudentDao {
+
+    private static final String TAG = Student.class.getSimpleName();
 
     // ------------------------student table--------------------------
     public static final String TABLE_STUDENT = "student";
@@ -114,9 +118,15 @@ public class StudentDao {
     private class DownloadPicsTask extends AsyncTask<Student[], Void, Void> {
         @Override
         protected Void doInBackground(Student[]... params) {
+            try {
 
-            for (Student student : params[0]) {
-                FileUtils.loadAndSavePic(context, Server.BASE_URL + student.avatar);
+                for (Student student : params[0]) {
+                    FileUtils.loadAndSavePic(Server.PICTURE_BASE_URL + student.avatar);
+                }
+
+            } catch (IOException e) {
+                // TODO
+                Log.e(TAG, e.getMessage());
             }
             return null;
         }
