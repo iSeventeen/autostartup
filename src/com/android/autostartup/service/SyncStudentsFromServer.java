@@ -1,20 +1,15 @@
 package com.android.autostartup.service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.autostartup.controller.server.Server;
 import com.android.autostartup.dao.StudentDao;
 import com.android.autostartup.model.Student;
-import com.android.autostartup.utils.FileUtils;
-import com.squareup.picasso.Picasso;
 
 public class SyncStudentsFromServer {
 

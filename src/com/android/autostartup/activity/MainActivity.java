@@ -42,6 +42,8 @@ import com.android.autostartup.utils.Utils;
 @TargetApi(Build.VERSION_CODES.ECLAIR)
 public class MainActivity extends Activity implements OnClickListener {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
+
     private static final int DELAY_MILLIS = 5000;
 
     private RelativeLayout mDetailInfoLayout;
@@ -301,9 +303,14 @@ public class MainActivity extends Activity implements OnClickListener {
 
     @Override
     protected void onDestroy() {
-        release();
-
         super.onDestroy();
+        Log.i(TAG, "onDestroy...");
+        release();
+        //TODO need check!!
+        if (null != mediaPlayer) {
+            mediaPlayer.release();
+        }
+
         PollingUtils.stopPollingService(this, DBSyncService.class, DBSyncService.ACTION);
     }
 

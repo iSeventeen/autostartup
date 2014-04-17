@@ -18,7 +18,7 @@ public class Server {
 
     public static final String TAG = Server.class.getSimpleName();
 
-    public static final String BASE_URL = "http://192.168.2.102:9000/";
+    public static final String BASE_URL = "http://192.168.1.10:9000/";
     public static final String API_BASE_URL = BASE_URL + "api/";
     public static final String FILE_BASE_URL = BASE_URL + "assets/files/";
     public static final String PICTURE_BASE_URL = FILE_BASE_URL + "picture/";

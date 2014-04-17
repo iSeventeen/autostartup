@@ -5,10 +5,12 @@ import java.io.IOException;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
+import android.view.WindowManager;
 
 import com.android.autostartup.R;
 import com.android.autostartup.controller.server.Server;
@@ -23,6 +25,13 @@ public class SplashActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+     // hide title
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        // set full screen
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        // keep screen on
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().requestFeature(Window.FEATURE_PROGRESS);
 
         setContentView(R.layout.activity_splash);
@@ -31,7 +40,7 @@ public class SplashActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        PollingUtils.startPollingService(this, 24 * 60 * 60, DBSyncService.class,
+        PollingUtils.startPollingService(this, 20, DBSyncService.class,
                 DBSyncService.ACTION);
 
         new LoadDataTask().execute();
