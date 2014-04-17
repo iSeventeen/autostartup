@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:baselineAligned="false"
     android:orientation="horizontal"
+    android:background="@drawable/bg"
     tools:context=".MainActivity" >
 
     <include layout="@layout/layout_vedio" />

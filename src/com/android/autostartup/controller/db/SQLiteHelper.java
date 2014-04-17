@@ -60,6 +60,13 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         Cursor c = db.query(tablename, null, null, null, null, null, null);
         return c;
     }
+    
+    public Cursor query(String tablename, String whereClause, String cardId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor c = db.rawQuery("select * from " + tablename + " where " + whereClause + "=?",
+                new String[] { cardId });
+        return c;
+    }
 
     public Cursor queryById(String tablename, long id) {
         SQLiteDatabase db = this.getWritableDatabase();

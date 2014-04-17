@@ -9,8 +9,12 @@ import java.util.Locale;
 import org.apache.http.util.EncodingUtils;
 
 import android.content.Context;
+import android.util.Log;
 
 public class Utils {
+    
+    public static final String WHOLE_FORMAT_STRING = "yyyy-MM-dd HH:dd:mm:ss";
+    public static final String DATE_FORMAT_STRING = "yyyy-MM-dd";
 
     public static String parseHexData(String data) {
         StringBuffer sb = new StringBuffer();
@@ -45,12 +49,17 @@ public class Utils {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
         return sdf.format(new Date());
     }
-    
-    public static String formatDate(Date value) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:dd:mm:ss", Locale.CHINA);
+
+    public static String formatDate(String formatString, Date value) {
+        SimpleDateFormat sdf = new SimpleDateFormat(formatString, Locale.CHINA);
         return sdf.format(value);
     }
-    
+    public static String formatDate(String formatString, long value) {
+        Date date = new Date(value);
+        SimpleDateFormat sdf = new SimpleDateFormat(formatString, Locale.CHINA);
+        return sdf.format(date);
+    }
+
     public static Date parseDate(String value) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:dd:mm:ss", Locale.CHINA);

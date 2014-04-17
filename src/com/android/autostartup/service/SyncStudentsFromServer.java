@@ -18,8 +18,8 @@ public class SyncStudentsFromServer {
     private StudentDao studentDao;
 
     private Student[] studentsFromServer;
-    private List<String> newIds = new ArrayList<String>();
-    private List<String> updatedIds = new ArrayList<String>();
+    private List<Long> newIds = new ArrayList<Long>();
+    private List<Long> updatedIds = new ArrayList<Long>();
 
     public SyncStudentsFromServer(Context context) {
         studentDao = new StudentDao(context);
@@ -68,13 +68,13 @@ public class SyncStudentsFromServer {
 
         for (int i = serverStudents.size() - 1; i > -1; i--) {
             Student serverObj = serverStudents.get(i);
-            String serverCardId = serverObj.cardId;
+            long serverId = serverObj.id;
             for (int j = localStudents.size() - 1; j > -1; j--) {
                 Student localObj = localStudents.get(j);
 
-                if (serverCardId.equals(localObj.cardId)) {
+                if (serverId == localObj.id) {
                     if (serverObj.updatedAt != localObj.updatedAt) {
-                        updatedIds.add(serverCardId);
+                        updatedIds.add(serverId);
                     }
                     localStudents.remove(j);
                     serverStudents.remove(i);
@@ -85,7 +85,7 @@ public class SyncStudentsFromServer {
 
         Log.i(TAG, "serverstudentlist.size=" + serverStudents.size());
         for (Student student : serverStudents) {
-            newIds.add(student.cardId);
+            newIds.add(student.id);
         }
     }
 
@@ -150,7 +150,7 @@ public class SyncStudentsFromServer {
 
             @Override
             public void onSuccess(Student[] students) {
-                studentDao.updateByCardId(students);
+                studentDao.updateById(students);
 
             }
         }, new Server.ErrorCallback() {
