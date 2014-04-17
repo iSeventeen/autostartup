@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.android.autostartup.app.Application;
 import com.android.autostartup.model.CommonResult;
+import com.android.autostartup.model.Parent;
 import com.android.autostartup.model.Student;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -88,7 +89,7 @@ public class Server {
 
     public static void requestAllStudent(final GetStudentsCallback callback,
             final ErrorCallback errorCallback) {
-        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/all");
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students");
         GsonRequest<Student[]> gsonRequest = new GsonRequest<Student[]>(url.toString(),
                 Student[].class, null, new Response.Listener<Student[]>() {
                     @Override
@@ -156,7 +157,7 @@ public class Server {
 
     public static void saveStudent(final Student student, final CommonCallback callback,
             final ErrorCallback errorCallback) {
-        StringBuilder url = new StringBuilder(API_BASE_URL).append("students/save");
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("students");
 
         GsonRequest<CommonResult> gsonRequest = new GsonRequest<CommonResult>(Request.Method.POST,
                 url.toString(), CommonResult.class, null, getParams(student),
@@ -197,9 +198,11 @@ public class Server {
         Map<String, String> params = new HashMap<String, String>();
         params.put("cardId", student.cardId);
         params.put("name", student.name);
+        params.put("grade", String.valueOf(student.grade));
         params.put("gender", String.valueOf(student.gender));
-        params.put("age", String.valueOf(student.age));
+        params.put("address", student.address);
         params.put("avatar", student.avatar);
+        params.put("notes", student.notes);
         params.put("createdAt", String.valueOf(student.createdAt));
         params.put("updatedAt", String.valueOf(student.updatedAt));
 
@@ -208,6 +211,55 @@ public class Server {
 
     public interface CommonCallback {
         public void onSuccess(String status);
+    }
+
+    // /////////////////////////////////////////////////////////////////////
+
+    public static void requestAllParent(final GetParentsCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("parents");
+        GsonRequest<Parent[]> gsonRequest = new GsonRequest<Parent[]>(url.toString(),
+                Parent[].class, null, new Response.Listener<Parent[]>() {
+                    @Override
+                    public void onResponse(Parent[] parents) {
+                        callback.onSuccess(parents);
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        gsonRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 2, 1));
+        executeRequest(gsonRequest, TAG);
+    }
+
+    public interface GetParentsCallback {
+        public void onSuccess(Parent[] parents);
+    }
+
+    public static void requestAllParentIds(final GetParentsCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("parents/ids");
+        GsonRequest<Parent[]> gsonRequest = new GsonRequest<Parent[]>(url.toString(),
+                Parent[].class, null, new Response.Listener<Parent[]>() {
+                    @Override
+                    public void onResponse(Parent[] parents) {
+                        callback.onSuccess(parents);
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        gsonRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 2, 1));
+        executeRequest(gsonRequest, TAG);
+
+    }
+
+    public static void requestParentsByIds(String ids, final GetParentsCallback callback,
+            final ErrorCallback errorCallback) {
+        StringBuilder url = new StringBuilder(API_BASE_URL).append("parents/" + ids);
+        GsonRequest<Parent[]> gsonRequest = new GsonRequest<Parent[]>(url.toString(),
+                Parent[].class, null, new Response.Listener<Parent[]>() {
+                    @Override
+                    public void onResponse(Parent[] parents) {
+                        callback.onSuccess(parents);
+                    }
+                }, new SimpleErrorListener(errorCallback));
+        gsonRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 2, 1));
+        executeRequest(gsonRequest, TAG);
     }
 
 }

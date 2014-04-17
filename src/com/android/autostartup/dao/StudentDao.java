@@ -24,25 +24,26 @@ public class StudentDao {
     public static final String FIELD_STUDENT_ID = "id";
     public static final String FIELD_STUDENT_CARD_ID = "card_id";
     public static final String FIELD_STUDENT_NAME = "name";
-    public static final String FIELD_STUDENT_AGE = "age";
+    public static final String FIELD_STUDENT_GRADE = "grade";
     public static final String FIELD_STUDENT_GENDER = "gender";
+    public static final String FIELD_STUDENT_ADDRESS = "address";
     public static final String FIELD_STUDENT_AVATAR = "avatar";
+    public static final String FIELD_STUDENT_NOTES = "notes";
     public static final String FIELD_STUDENT_CREATED_AT = "created_at";
     public static final String FIELD_STUDENT_UPDATED_AT = "updated_at";
 
     public static final String SQL_CREATE_STUDENT = "Create table " + TABLE_STUDENT + "("
-            + FIELD_STUDENT_ID + " integer primary key autoincrement," + FIELD_STUDENT_CARD_ID
-            + " text," + FIELD_STUDENT_NAME + " text," + FIELD_STUDENT_GENDER + " integer,"
-            + FIELD_STUDENT_AGE + " integer," + FIELD_STUDENT_AVATAR + " text,"
+            + FIELD_STUDENT_ID + " integer primary key," + FIELD_STUDENT_CARD_ID + " text,"
+            + FIELD_STUDENT_NAME + " text," + FIELD_STUDENT_GRADE + " integer,"
+            + FIELD_STUDENT_GENDER + " integer," + FIELD_STUDENT_ADDRESS + " text,"
+            + FIELD_STUDENT_AVATAR + " text," + FIELD_STUDENT_NOTES + " text,"
             + FIELD_STUDENT_CREATED_AT + " integer," + FIELD_STUDENT_UPDATED_AT + " integer" + ");";
 
     public static final String SQL_DROP_STUDENT = " DROP TABLE IF EXISTS " + TABLE_STUDENT;
 
-    private Context context;
     private SQLiteHelper helper;
 
     public StudentDao(Context context) {
-        this.context = context;
         helper = new SQLiteHelper(context);
     }
 
@@ -71,15 +72,15 @@ public class StudentDao {
         return students;
     }
 
-    public void updateByCardId(Student[] students) {
+    public void updateById(Student[] students) {
         for (Student student : students) {
-            updateByCardId(student);
+            updateById(student);
         }
     }
 
-    public void updateByCardId(Student student) {
-        helper.update(TABLE_STUDENT, buildValues(student), FIELD_STUDENT_CARD_ID + "=?",
-                student.cardId);
+    public void updateById(Student student) {
+        helper.update(TABLE_STUDENT, buildValues(student), FIELD_STUDENT_ID + "=?",
+                String.valueOf(student.id));
     }
 
     public void save(Student[] students) {
@@ -95,11 +96,14 @@ public class StudentDao {
 
     public ContentValues buildValues(Student student) {
         ContentValues values = new ContentValues();
+        values.put(FIELD_STUDENT_ID, student.id);
         values.put(FIELD_STUDENT_CARD_ID, student.cardId);
         values.put(FIELD_STUDENT_NAME, student.name);
-        values.put(FIELD_STUDENT_AGE, student.age);
+        values.put(FIELD_STUDENT_GRADE, student.grade);
         values.put(FIELD_STUDENT_GENDER, student.gender);
+        values.put(FIELD_STUDENT_ADDRESS, student.address);
         values.put(FIELD_STUDENT_AVATAR, student.avatar);
+        values.put(FIELD_STUDENT_NOTES, student.notes);
         values.put(FIELD_STUDENT_CREATED_AT, student.createdAt);
         values.put(FIELD_STUDENT_UPDATED_AT, student.updatedAt);
         return values;
@@ -107,8 +111,8 @@ public class StudentDao {
 
     public Student buildStudent(Cursor cursor) {
         return new Student(cursor.getInt(0), cursor.getString(1), cursor.getString(2),
-                cursor.getInt(3), cursor.getInt(4), cursor.getString(5), cursor.getLong(6),
-                cursor.getLong(7));
+                cursor.getInt(3), cursor.getInt(4), cursor.getString(5), cursor.getString(6),
+                cursor.getString(7), cursor.getLong(8), cursor.getLong(9));
     }
 
     public void loadAndSavePics(Student[] students) {

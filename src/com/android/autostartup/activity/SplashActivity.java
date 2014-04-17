@@ -40,7 +40,7 @@ public class SplashActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        PollingUtils.startPollingService(this, 20, DBSyncService.class,
+        PollingUtils.startPollingService(this, 20 * 60, DBSyncService.class,
                 DBSyncService.ACTION);
 
         new LoadDataTask().execute();

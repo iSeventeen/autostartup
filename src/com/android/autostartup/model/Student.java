@@ -9,21 +9,24 @@ public class Student {
     public long id;
     public String cardId;
     public String name;
-    public int age;
+    public int grade;
     public int gender;
+    public String address;
     public String avatar;
+    public String notes;
     public long createdAt;
     public long updatedAt;
-//    public ArrayList<Parent> parents = new ArrayList<Parent>();
 
-    public Student(long id, String cardId, String name, int age, int gender, String avatar,
-            long createdAt, long updatedAt) {
+    public Student(long id, String cardId, String name, int grade, int gender, String address,
+            String avatar, String notes, long createdAt, long updatedAt) {
         this.id = id;
         this.cardId = cardId;
         this.name = name;
-        this.age = age;
+        this.grade = grade;
         this.gender = gender;
+        this.address = address;
         this.avatar = avatar;
+        this.notes = notes;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -37,8 +40,9 @@ public class Student {
     }
 
     public String toString() {
-        String value = "id=%s, cardId=%s, name=%s, age=%s, gender=%s, avatar=%s, createdAt=%s, updatedAt=%s";
-        return String.format(value, id, cardId, name, age, gender, avatar, createdAt, updatedAt);
+        String value = "id=%s, cardId=%s, name=%s, grade=%s, gender=%s, address=%s, avatar=%s, notes=%s, createdAt=%s, updatedAt=%s";
+        return String.format(value, id, cardId, name, grade, gender, address, avatar, notes,
+                createdAt, updatedAt);
     }
 
 }

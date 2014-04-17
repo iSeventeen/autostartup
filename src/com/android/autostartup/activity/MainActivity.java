@@ -13,6 +13,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,7 +32,9 @@ import android.widget.VideoView;
 
 import com.android.autostartup.R;
 import com.android.autostartup.app.Application;
+import com.android.autostartup.dao.ParentDao;
 import com.android.autostartup.dao.StudentDao;
+import com.android.autostartup.model.Parent;
 import com.android.autostartup.model.Student;
 import com.android.autostartup.serialport.SerialPort;
 import com.android.autostartup.service.DBSyncService;
@@ -61,11 +64,13 @@ public class MainActivity extends Activity implements OnClickListener {
     private Button mAvatarBtn;
 
     private VideoView mVideoView;
+    private VideoView mCameraVideo;
     private MediaPlayer mediaPlayer;
 
     private int positionWhenPaused = -1;
 
     private StudentDao studentDao;
+    private ParentDao parentDao;
 
     private String hexData;
 
@@ -125,9 +130,15 @@ public class MainActivity extends Activity implements OnClickListener {
         setContentView(R.layout.activity_main);
 
         studentDao = new StudentDao(this);
+        parentDao = new ParentDao(this);
+
         List<Student> students = studentDao.getAll();
         for (Student student : students) {
-            Log.i("MainActivity>all>", student.toString());
+            Log.i("MainActivity>all>students", student.toString());
+        }
+        List<Parent> parents = parentDao.getAll();
+        for (Parent parent : parents) {
+            Log.i("MainActivity>all>parents", parent.toString());
         }
 
         initSerialPort();
@@ -138,18 +149,7 @@ public class MainActivity extends Activity implements OnClickListener {
     @Override
     protected void onStart() {
         super.onStart();
-        final String url = FileUtils.getVideoPath(MainActivity.this);
-        mVideoView.setVideoPath(url);
-        mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                // mVideoView.setVideoURI(Uri.parse(FileUtils.getVideoPath(MainActivity.this)));
-                mVideoView.setVideoPath(url);
-                mVideoView.start();
-            }
-        });
-        mVideoView.start();
+        setupVideoView();
     }
 
     private void initSerialPort() {
@@ -212,10 +212,39 @@ public class MainActivity extends Activity implements OnClickListener {
     private void initVideoView() {
         mVideoView = (VideoView) findViewById(R.id.videoview);
         mVideoView.requestFocus();
+
+        mCameraVideo = (VideoView) findViewById(R.id.cctv);
+        mCameraVideo.setVideoPath(FileUtils.getVideoPath(MainActivity.this));
+        mCameraVideo.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mCameraVideo.setVideoPath(FileUtils.getVideoPath(MainActivity.this));
+                mCameraVideo.start();
+            }
+        });
+    }
+
+    private void setupVideoView() {
+        final String url = FileUtils.getVideoPath(MainActivity.this);
+        mVideoView.setVideoPath(url);
+        mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                // mVideoView.setVideoURI(Uri.parse(FileUtils.getVideoPath(MainActivity.this)));
+                mVideoView.setVideoPath(url);
+                mVideoView.start();
+            }
+        });
+        mVideoView.start();
     }
 
     private void updateView() {
         resetMediaPlayer();
+        if (null != mCameraVideo && mCameraVideo.isPlaying()) {
+            mCameraVideo.stopPlayback();
+        }
 
         if (null != mVideoView) {
             showOrHide(true);
@@ -237,7 +266,7 @@ public class MainActivity extends Activity implements OnClickListener {
             @Override
             public void run() {
                 handler.removeCallbacks(runnable);
-                if (mVideoView.isPlaying()) {
+                if (null != mVideoView && mVideoView.isPlaying()) {
                     mVideoView.pause();
                 }
                 resetMediaPlayer();
@@ -261,6 +290,10 @@ public class MainActivity extends Activity implements OnClickListener {
                     mediaPlayer.reset();
                     initMediaPlayer();
                 }
+
+                if (null != mCameraVideo && mCameraVideo.isPlaying()) {
+                    mCameraVideo.stopPlayback();
+                }
                 showOrHide(true);
                 mVideoView.start();
             }
@@ -270,7 +303,8 @@ public class MainActivity extends Activity implements OnClickListener {
                 mediaPlayer.reset();
                 initMediaPlayer();
             }
-            if (mVideoView.canPause()) {
+
+            if (null != mVideoView && mVideoView.canPause()) {
                 mVideoView.pause();
             }
 
@@ -306,7 +340,7 @@ public class MainActivity extends Activity implements OnClickListener {
         super.onDestroy();
         Log.i(TAG, "onDestroy...");
         release();
-        //TODO need check!!
+        // TODO need check!!
         if (null != mediaPlayer) {
             mediaPlayer.release();
         }
@@ -345,40 +379,67 @@ public class MainActivity extends Activity implements OnClickListener {
 
     public void updateViews(String cardId) {
 
-        Student student = studentDao.findByCardId(cardId);
-        if (null != student) {
-            updateViews(student);
+        Parent parent = parentDao.getByCardId(cardId);
+        if (null != parent) {
+            // TODO REFACTOR
+            List<Parent> parents = parentDao.getByStudentId(parent.student);
+            Student student = studentDao.findById(parent.student);
+            updateViews(student, parents);
+
+            showOrHide(false);
+            mediaPlayer.start();
+            if (null != mCameraVideo && !mCameraVideo.isPlaying()) {
+                mCameraVideo.start();
+            }
+
+            // TODO
+            // handler.postDelayed(runnable, DELAY_MILLIS);
         }
-
-        showOrHide(false);
-        mediaPlayer.start();
-
-        // TODO
-        // handler.postDelayed(runnable, DELAY_MILLIS);
     }
 
-    private void updateViews(Student student) {
-        // ----------------------------------------------------------------------------
+    private void updateViews(Student student, List<Parent> parents) {
         mNameTextView.setText(getString(R.string.welcome, student.name));
-        String cardNumber = student.cardId.length() < 10 ? student.cardId : student.cardId
-                .substring(0, 9);
-        mNumberTextView.setText(getString(R.string.student_number, cardNumber));
+        mNumberTextView.setText(getString(R.string.student_number, "1111"));
         mClassTextView.setText(getString(R.string.student_class, "豆豆班"));
-        mTimeTextView.setText(getString(R.string.student_register_time, Utils.formatDate()));
+        mTimeTextView.setText(getString(R.string.student_register_time,
+                Utils.formatDate(Utils.DATE_FORMAT_STRING, student.createdAt)));
 
-        String filePath = FileUtils.PICS_EXTERNAL_DIR + student.avatar;
-        Bitmap bitmap = BitmapFactory.decodeFile(filePath);
-        mStudentImageView.setImageBitmap(bitmap);
+        new LoadStudentPicTask().execute(student.avatar);
 
-        // -----------------------------------------------------------------------------
+        // TODO
         mParentsLayout.removeAllViews();
-        // TODO: fetch parents from local sqlite
+        for (Parent parent : parents) {
+            new LoadParentPicTask().execute(parent.avatar);
+        }
 
-        // for (Parent parent : student.parents) {
-        for (int i = 0; i < 5; i++) {
-            // String imgUrl = parent.avatar;
-            ImageView imageView = new ImageView(this);
-            imageView.setBackgroundResource(R.drawable.parent);
+    }
+
+    private class LoadStudentPicTask extends AsyncTask<String, Void, Bitmap> {
+        @Override
+        protected Bitmap doInBackground(String... params) {
+            String filePath = FileUtils.PICS_EXTERNAL_DIR + params[0];
+
+            return BitmapFactory.decodeFile(filePath);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            mStudentImageView.setImageBitmap(bitmap);
+        }
+    }
+
+    private class LoadParentPicTask extends AsyncTask<String, Void, Bitmap> {
+        @Override
+        protected Bitmap doInBackground(String... params) {
+            String filePath = FileUtils.PICS_EXTERNAL_DIR + params[0];
+
+            return BitmapFactory.decodeFile(filePath);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            ImageView imageView = new ImageView(MainActivity.this);
+            imageView.setImageBitmap(bitmap);
             int width = 180;
             int height = 105;
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width, height);
@@ -386,6 +447,5 @@ public class MainActivity extends Activity implements OnClickListener {
             imageView.setLayoutParams(params);
             mParentsLayout.addView(imageView);
         }
-
     }
 }
