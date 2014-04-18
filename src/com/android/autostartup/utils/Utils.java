@@ -8,13 +8,26 @@ import java.util.Locale;
 
 import org.apache.http.util.EncodingUtils;
 
+import android.app.AlertDialog;
 import android.content.Context;
-import android.util.Log;
+import android.content.DialogInterface;
 
 public class Utils {
     
     public static final String WHOLE_FORMAT_STRING = "yyyy-MM-dd HH:dd:mm:ss";
     public static final String DATE_FORMAT_STRING = "yyyy-MM-dd";
+
+    public static void DisplayError(Context context, int resourceId) {
+        AlertDialog.Builder b = new AlertDialog.Builder(context);
+        b.setTitle("Error");
+        b.setMessage(resourceId);
+        b.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // MainActivity.this.finish();
+            }
+        });
+        b.show();
+    }
 
     public static String parseHexData(String data) {
         StringBuffer sb = new StringBuffer();

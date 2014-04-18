@@ -25,8 +25,8 @@ public class SplashActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-     // hide title
+
+        // hide title
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         // set full screen
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -40,8 +40,7 @@ public class SplashActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        PollingUtils.startPollingService(this, 20 * 60, DBSyncService.class,
-                DBSyncService.ACTION);
+        PollingUtils.startPollingService(this, 20 * 60, DBSyncService.class, DBSyncService.ACTION);
 
         new LoadDataTask().execute();
     }
@@ -67,20 +66,20 @@ public class SplashActivity extends Activity {
 
                 // load background of home screen
                 String srcUrl = Server.BASE_URL + "assets/files/picture/bg.png";
-                if (new File(srcUrl).exists()) {
+                if (!new File(srcUrl).exists()) {
                     FileUtils.loadAndSavePic(srcUrl);
                 }
                 // TODO load xml file(e.g. setting garten info)
 
                 // load audio
                 srcUrl = Server.BASE_URL + "assets/files/audio/audio.mp3";
-                if (new File(srcUrl).exists()) {
+                if (!new File(srcUrl).exists()) {
                     FileUtils.loadAndSaveAudio(srcUrl);
                 }
 
                 // load video
                 srcUrl = Server.BASE_URL + "assets/files/video/video.mp4";
-                if (new File(srcUrl).exists()) {
+                if (!new File(srcUrl).exists()) {
                     FileUtils.loadAndSaveVideo(srcUrl);
                 }
 

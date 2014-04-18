@@ -12,7 +12,7 @@
     <string name="header_title">未来幼儿园接送管理</string>
     <string name="welcome">欢迎 %1$s 小朋友入园</string>
     <string name="student_temperature">今日体温：%1$s℃</string>
-    <string name="student_number">学号：%1$s</string>
+    <string name="student_number">姓名：%1$s</string>
     <string name="student_class">班级：%1$s</string>
     <string name="student_register_time">入园时间：%1$s</string>
     <string name="text_warm_prompt">温馨提示</string>

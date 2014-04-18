@@ -5,7 +5,8 @@
     android:baselineAligned="false"
     android:orientation="horizontal"
     android:background="@drawable/bg"
-    tools:context=".MainActivity" >
+    tools:context=".MainActivity"
+    android:id="@+id/layout_main" >
 
     <include layout="@layout/layout_vedio" />
 

@@ -241,7 +241,12 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     private void updateView() {
-        resetMediaPlayer();
+        if (null != mediaPlayer) {
+            mediaPlayer.reset();
+            mediaPlayer.release();
+            initMediaPlayer();
+        }
+
         if (null != mCameraVideo && mCameraVideo.isPlaying()) {
             mCameraVideo.stopPlayback();
         }
@@ -257,6 +262,7 @@ public class MainActivity extends Activity implements OnClickListener {
     private void resetMediaPlayer() {
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.reset();
+            mediaPlayer.release();
             initMediaPlayer();
         }
     }
@@ -271,8 +277,16 @@ public class MainActivity extends Activity implements OnClickListener {
                 }
                 resetMediaPlayer();
 
+                showOrHide(false);
+                mediaPlayer.start();
+                if (null != mCameraVideo && !mCameraVideo.isPlaying()) {
+                    mCameraVideo.start();
+                }
+
                 hexData = new String(buffer, 0, size);
                 updateViews(hexData);
+                // TODO
+                // handler.postDelayed(runnable, DELAY_MILLIS);
             }
         });
     }
@@ -288,6 +302,7 @@ public class MainActivity extends Activity implements OnClickListener {
             if (null != mVideoView) {
                 if (mediaPlayer.isPlaying()) {
                     mediaPlayer.reset();
+                    mediaPlayer.release();
                     initMediaPlayer();
                 }
 
@@ -299,22 +314,23 @@ public class MainActivity extends Activity implements OnClickListener {
             }
         } else if (view == mAvatarBtn) {
             handler.removeCallbacks(runnable);
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.reset();
-                initMediaPlayer();
-            }
-
             if (null != mVideoView && mVideoView.canPause()) {
                 mVideoView.pause();
             }
+
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.reset();
+                mediaPlayer.release();
+                initMediaPlayer();
+            }
+
+            showOrHide(false);
+            mediaPlayer.start();
 
             // ------------------------------------------------------------
             String hexData = "02 30 30 30 38 38 34 36 34 38 36 0D 0A 03";
             updateViews("1234561");
             // ------------------------------------------------------------
-
-            showOrHide(false);
-            mediaPlayer.start();
             handler.postDelayed(runnable, DELAY_MILLIS);
         }
     }
@@ -342,6 +358,7 @@ public class MainActivity extends Activity implements OnClickListener {
         release();
         // TODO need check!!
         if (null != mediaPlayer) {
+            mediaPlayer.reset();
             mediaPlayer.release();
         }
 
@@ -385,31 +402,21 @@ public class MainActivity extends Activity implements OnClickListener {
             List<Parent> parents = parentDao.getByStudentId(parent.student);
             Student student = studentDao.findById(parent.student);
             updateViews(student, parents);
-
-            showOrHide(false);
-            mediaPlayer.start();
-            if (null != mCameraVideo && !mCameraVideo.isPlaying()) {
-                mCameraVideo.start();
-            }
-
-            // TODO
-            // handler.postDelayed(runnable, DELAY_MILLIS);
         }
     }
 
     private void updateViews(Student student, List<Parent> parents) {
         mNameTextView.setText(getString(R.string.welcome, student.name));
-        mNumberTextView.setText(getString(R.string.student_number, "1111"));
-        mClassTextView.setText(getString(R.string.student_class, "豆豆班"));
-        mTimeTextView.setText(getString(R.string.student_register_time,
-                Utils.formatDate(Utils.DATE_FORMAT_STRING, student.createdAt)));
+        mNumberTextView.setText(getString(R.string.student_number, student.name));
+        mClassTextView.setText(getString(R.string.student_class, "小班"));
+        mTimeTextView.setText(getString(R.string.student_register_time,Utils.formatDate()));
 
         new LoadStudentPicTask().execute(student.avatar);
 
         // TODO
         mParentsLayout.removeAllViews();
         for (Parent parent : parents) {
-            new LoadParentPicTask().execute(parent.avatar);
+            new LoadParentPicTask(parent).execute();
         }
 
     }
@@ -428,24 +435,37 @@ public class MainActivity extends Activity implements OnClickListener {
         }
     }
 
-    private class LoadParentPicTask extends AsyncTask<String, Void, Bitmap> {
+    private class LoadParentPicTask extends AsyncTask<Void, Void, Bitmap> {
+
+        private Parent parent;
+
+        public LoadParentPicTask(Parent parent) {
+            this.parent = parent;
+        }
+
         @Override
-        protected Bitmap doInBackground(String... params) {
-            String filePath = FileUtils.PICS_EXTERNAL_DIR + params[0];
+        protected Bitmap doInBackground(Void... params) {
+            String filePath = FileUtils.PICS_EXTERNAL_DIR + parent.avatar;
 
             return BitmapFactory.decodeFile(filePath);
         }
 
         @Override
         protected void onPostExecute(Bitmap bitmap) {
-            ImageView imageView = new ImageView(MainActivity.this);
+            /*
+             * ImageView imageView = new ImageView(MainActivity.this);
+             * imageView.setImageBitmap(bitmap); int width = 180; int height =
+             * 105; LinearLayout.LayoutParams params = new
+             * LinearLayout.LayoutParams(width, height); params.bottomMargin =
+             * 5; imageView.setLayoutParams(params);
+             */
+
+            View linearLayout = View.inflate(MainActivity.this, R.layout.layout_parent, null);
+            ImageView imageView = (ImageView) linearLayout.findViewById(R.id.parent_img);
             imageView.setImageBitmap(bitmap);
-            int width = 180;
-            int height = 105;
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width, height);
-            params.bottomMargin = 5;
-            imageView.setLayoutParams(params);
-            mParentsLayout.addView(imageView);
+            TextView textView = (TextView) linearLayout.findViewById(R.id.parent_role);
+            textView.setText(parent.role);
+            mParentsLayout.addView(linearLayout);
         }
     }
 }

@@ -40,6 +40,7 @@ public class FileUtils {
 
     public static final String FILE_VIDEO_PATH = VIDEO_EXTERNAL_DIR + "video.mp4";
     public static final String FILE_AUDIO_PATH = AUDIO_EXTERNAL_DIR + "audio.mp3";
+    public static final String FILE_BG_PATH = PICS_EXTERNAL_DIR + "bg.png";
 
     public static void createFolders(Context context) {
         createProjectPath();
@@ -61,6 +62,15 @@ public class FileUtils {
 
     public static String getProjectPath() {
         return PROJECT_EXTERNAL_DIR;
+    }
+
+    public static String getBgPath(Context context) {
+        String bgPath = FILE_BG_PATH;
+        if (!new File(bgPath).exists()) {
+            bgPath = "android.resource://" + context.getPackageName() + "/" + R.raw.bg;
+        }
+        Log.i(TAG, "background pic path:" + bgPath);
+        return bgPath;
     }
 
     public static String getVideoPath(Context context) {
