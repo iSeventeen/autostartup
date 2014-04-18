@@ -285,8 +285,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
                 hexData = new String(buffer, 0, size);
                 updateViews(hexData);
-                // TODO
-                // handler.postDelayed(runnable, DELAY_MILLIS);
+                handler.postDelayed(runnable, DELAY_MILLIS);
             }
         });
     }
@@ -329,7 +328,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
             // ------------------------------------------------------------
             String hexData = "02 30 30 30 38 38 34 36 34 38 36 0D 0A 03";
-            updateViews("1234561");
+            updateViews("1234565");
             // ------------------------------------------------------------
             handler.postDelayed(runnable, DELAY_MILLIS);
         }
@@ -409,7 +408,7 @@ public class MainActivity extends Activity implements OnClickListener {
         mNameTextView.setText(getString(R.string.welcome, student.name));
         mNumberTextView.setText(getString(R.string.student_number, student.name));
         mClassTextView.setText(getString(R.string.student_class, "小班"));
-        mTimeTextView.setText(getString(R.string.student_register_time,Utils.formatDate()));
+        mTimeTextView.setText(getString(R.string.student_register_time, Utils.formatDate()));
 
         new LoadStudentPicTask().execute(student.avatar);
 
