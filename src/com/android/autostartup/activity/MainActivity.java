@@ -144,6 +144,9 @@ public class MainActivity extends Activity implements OnClickListener {
         initSerialPort();
         initView();
         updateViews("1234560");
+        if (null != mCameraVideo) {
+            mCameraVideo.start();
+        }
     }
 
     @Override
@@ -285,6 +288,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
                 hexData = new String(buffer, 0, size);
                 updateViews(hexData);
+                mCameraVideo.start();
                 handler.postDelayed(runnable, DELAY_MILLIS);
             }
         });
@@ -329,6 +333,7 @@ public class MainActivity extends Activity implements OnClickListener {
             // ------------------------------------------------------------
             String hexData = "02 30 30 30 38 38 34 36 34 38 36 0D 0A 03";
             updateViews("1234565");
+            mCameraVideo.start();
             // ------------------------------------------------------------
             handler.postDelayed(runnable, DELAY_MILLIS);
         }
